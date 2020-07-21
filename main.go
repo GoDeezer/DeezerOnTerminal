@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	deezer "github.com/erebid/go-deezer/deezer"
+	deezer "github.com/GoDeezer/lib/deezer"
 	ui "github.com/gizak/termui/v3"
 	widgets "github.com/gizak/termui/v3/widgets"
 )
@@ -47,6 +47,7 @@ func (self *TabView) NextTab() {
 }
 
 // Search
+// TODO Use string builder/bytebuffer for input field
 type Search struct {
 	Share     *ModuleShare
 	SubModule []Module
@@ -109,7 +110,15 @@ func (self *Search) HandleEvent(ev ui.Event) {
 				res = append(res, "error", fmt.Sprint(err))
 			} else {
 				for _, q := range query.Songs.Data {
-					res = append(res, fmt.Sprint(q.Title, " by ", q.ArtistName))
+					artist := q.ArtistName
+					title := q.Title
+					if len(artist) > 20 {
+						artist = artist[:20]
+					}
+					if len(title) > 20 {
+						title = title[:20]
+					}
+					res = append(res, fmt.Sprintf("%-20s | %-20s %d", artist, title, q.ExplicitContent.LyricsStatus))
 				}
 			}
 			self.SearchBar.Text = ""
@@ -118,6 +127,8 @@ func (self *Search) HandleEvent(ev ui.Event) {
 			// Add to queue
 			self.Share.MusicQueue = append(self.Share.MusicQueue, self.SearchResult.Rows[self.SearchResult.SelectedRow])
 		}
+	case "<Space>":
+		self.SearchBar.Text += " "
 	case "<Backspace>":
 		if self.SearchBar.Text != "" {
 			self.SearchBar.Text = self.SearchBar.Text[:len(self.SearchBar.Text)-1]
@@ -369,8 +380,7 @@ func (self *App) HandleResize() {
 }
 
 func (self *App) Run() error {
-
-	c, err := deezer.NewClient("7579cd89a4d2ab3d6dc2b418446e35c7bd11ba7e62b11d7a2034d888b73864f16a7bc3088a5087a00f53d079eefce6821b0a5e2f746bd9ca8161789a4da11ff7ece21cfbbf692eb7e749c256b1df5bfd4be1e0b1bbc8a441b769d51daea39212")
+	c, err := deezer.NewClient("")
 	if err != nil {
 		return err
 	}
