@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	deezer "github.com/erebid/go-deezer/deezer"
 	ui "github.com/gizak/termui/v3"
 	widgets "github.com/gizak/termui/v3/widgets"
 )
@@ -102,11 +103,17 @@ func (self *Search) HandleEvent(ev ui.Event) {
 	case "<Enter>":
 		if self.SearchBar.Text != "" {
 			// Load song here
-			self.SearchResult.Rows = []string{}
-			self.SearchBar.Text = ""
-			for i := 0; i < 50; i++ {
-				self.SearchResult.Rows = append(self.SearchResult.Rows, fmt.Sprint(i)+":song")
+			res := []string{}
+			query, err := self.Share.DeezerClient.Search(self.SearchBar.Text, "", "", 0, 20)
+			if err != nil {
+				res = append(res, "error", fmt.Sprint(err))
+			} else {
+				for _, q := range query.Songs.Data {
+					res = append(res, fmt.Sprint(q.Title, " by ", q.ArtistName))
+				}
 			}
+			self.SearchBar.Text = ""
+			self.SearchResult.Rows = res
 		} else {
 			// Add to queue
 			self.Share.MusicQueue = append(self.Share.MusicQueue, self.SearchResult.Rows[self.SearchResult.SelectedRow])
@@ -285,29 +292,33 @@ func (self *Playing) Resize(cols, rows int) {
 }
 
 type ModuleShare struct {
+	DeezerClient  *deezer.Client
 	MusicQueue    []string // use []song instead of []string
 	MusicCurrent  string
 	MusicProgress float64 // 0 to 1
 }
 
 type App struct {
-	Stop bool
+	Stop  bool
+	Share *ModuleShare
 
-	// Tab
 	Tab *TabView
 }
 
 func NewApp() *App {
 	shared := &ModuleShare{}
 
+	// Modules
 	playing := NewPlaying(shared)
 
 	app := &App{
-		Stop: false,
+		Stop:  false,
+		Share: shared,
 
 		Tab: &TabView{
 			CurrentTab: 0,
 			Tabs: []EventModule{
+				// Event Modules
 				NewSearch(shared, playing),
 				NewQueue(shared, playing),
 				NewCurrentSong(shared, playing),
@@ -357,13 +368,21 @@ func (self *App) HandleResize() {
 	}
 }
 
-func (self *App) Run() {
+func (self *App) Run() error {
+
+	c, err := deezer.NewClient("7579cd89a4d2ab3d6dc2b418446e35c7bd11ba7e62b11d7a2034d888b73864f16a7bc3088a5087a00f53d079eefce6821b0a5e2f746bd9ca8161789a4da11ff7ece21cfbbf692eb7e749c256b1df5bfd4be1e0b1bbc8a441b769d51daea39212")
+	if err != nil {
+		return err
+	}
+	self.Share.DeezerClient = c
+
 	ev := ui.PollEvents()
 	for !self.Stop {
 		e := <-ev
 		self.HandleEvent(e)
 		self.Render()
 	}
+	return nil
 }
 
 func main() {
@@ -372,5 +391,7 @@ func main() {
 	}
 	defer ui.Close()
 
-	NewApp().Run()
+	if err := NewApp().Run(); err != nil {
+		panic(err)
+	}
 }
