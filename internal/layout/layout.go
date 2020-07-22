@@ -1,8 +1,8 @@
 package layout
 
 import (
-	"github.com/GoDeezer/lib/deezer"
 	ui "github.com/gizak/termui/v3"
+	"github.com/godeezer/lib/deezer"
 )
 
 type ModuleShare struct {
