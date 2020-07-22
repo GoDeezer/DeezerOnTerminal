@@ -38,3 +38,7 @@ func (self *LayoutList) Next() {
 func (self *LayoutList) Render() {
 	self.Layout[self.CurrentLayout].Render()
 }
+
+func (self *LayoutList) HandleEvent(ev ui.Event) {
+	self.Layout[self.CurrentLayout].HandleEvent(ev)
+}

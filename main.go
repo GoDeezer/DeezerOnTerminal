@@ -4,15 +4,8 @@ import (
 	"log"
 
 	ui "github.com/gizak/termui/v3"
-	internel "github.com/godeezer/dot/internal"
+	layout "github.com/godeezer/dot/internal/layout"
 	deezer "github.com/godeezer/lib/deezer"
-)
-
-const (
-	SearchTrack = iota
-	SearchAlbum
-	SearchArtist
-	SearchPlaylist
 )
 
 const (
@@ -29,28 +22,28 @@ type Module interface {
 
 type App struct {
 	Stop  bool
-	Share *internal.ModuleShare
+	Share *layout.ModuleShare
 
-	Layout *internal.LayoutList
+	Layout *layout.LayoutList
 }
 
 func NewApp() *App {
-	shared := &ModuleShare{}
+	shared := &layout.ModuleShare{}
 
 	// Modules
-	playing := internel.NewPlaying(shared)
+	playing := layout.NewPlaying(shared)
 
 	app := &App{
 		Stop:  false,
 		Share: shared,
 
-		Layout: &LayoutList{
+		Layout: &layout.LayoutList{
 			CurrentLayout: 0,
-			Layout: []EventModule{
+			Layout: []layout.Layout{
 				// Event Modules
-				internel.NewSearch(shared, playing),
-				internel.NewQueue(shared, playing),
-				internel.NewCurrentSong(shared, playing),
+				layout.NewSearch(shared, playing),
+				layout.NewQueue(shared, playing),
+				layout.NewDetail(shared, playing),
 			},
 		},
 	}
@@ -74,7 +67,7 @@ func (self *App) HandleEvent(ev ui.Event) {
 			self.Stop = true
 			return
 		case "<Tab>":
-			self.Tab.NextTab()
+			self.Layout.Next()
 			self.Render()
 			return
 		}
@@ -85,20 +78,20 @@ func (self *App) HandleEvent(ev ui.Event) {
 	}
 
 	// tab specific
-	self.Tab.Tabs[self.Tab.CurrentTab].HandleEvent(ev)
+	self.Layout.HandleEvent(ev)
 	self.Render()
 }
 
 func (self *App) HandleResize() {
 	// Setting layout here
 	cols, rows := ui.TerminalDimensions()
-	for _, m := range self.Tab.Tabs {
+	for _, m := range self.Layout.Layout {
 		m.Resize(cols, rows)
 	}
 }
 
 func (self *App) Run() error {
-	c, err := deezer.NewClient("7579cd89a4d2ab3d6dc2b418446e35c7bd11ba7e62b11d7a2034d888b73864f16a7bc3088a5087a00f53d079eefce6821b0a5e2f746bd9ca8161789a4da11ff7ece21cfbbf692eb7e749c256b1df5bfd4be1e0b1bbc8a441b769d51daea39212")
+	c, err := deezer.NewClient("")
 	if err != nil {
 		return err
 	}

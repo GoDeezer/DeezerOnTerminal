@@ -3,7 +3,15 @@ package layout
 import (
 	"fmt"
 
+	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+)
+
+const (
+	SearchTrack = iota
+	SearchAlbum
+	SearchArtist
+	SearchPlaylist
 )
 
 // TODO Use string builder/bytebuffer for input field
