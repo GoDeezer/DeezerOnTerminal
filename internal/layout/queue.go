@@ -3,6 +3,8 @@ package layout
 import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+
+	"github.com/godeezer/internal/format"
 )
 
 type Queue struct {
@@ -33,7 +35,7 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 }
 
 func (self *Queue) Render() {
-	self.QueueList.Rows = self.Share.MusicQueue
+	self.QueueList.Rows = format.FormatSongs(self.Share.MusicQueue, 20)
 	ui.Render(self.QueueList)
 	for _, m := range self.SubModule {
 		m.Render()

@@ -7,8 +7,9 @@ import (
 
 type ModuleShare struct {
 	DeezerClient  *deezer.Client
-	MusicQueue    []string // use []song instead of []string
-	MusicCurrent  string
+	QueryResult   []deezer.SearchResponse
+	MusicQueue    []deezer.Song // use []song instead of []string
+	MusicCurrent  deezer.Song
 	MusicProgress float64 // 0 to 1
 }
 

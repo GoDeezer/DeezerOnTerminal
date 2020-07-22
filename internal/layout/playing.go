@@ -31,7 +31,7 @@ func (self *Playing) Render() {
 	for i := 0; i < int(float64(cols)*self.Share.MusicProgress); i++ {
 		progress += "█"
 	}
-	self.Playing.Text = self.Share.MusicCurrent + "\nmore information\n" + progress
+	self.Playing.Text = self.Share.MusicCurrent.Title + "\nmore information\n" + progress
 	ui.Render(self.Playing)
 }
 
