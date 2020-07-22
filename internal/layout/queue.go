@@ -4,7 +4,7 @@ import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 
-	"github.com/godeezer/internal/format"
+	"github.com/godeezer/dot/internal/format"
 )
 
 type Queue struct {
@@ -24,6 +24,7 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 	queue.SelectedRowStyle.Bg = ui.ColorWhite
 	queue.TextStyle.Fg = ui.ColorWhite
 	queue.TextStyle.Bg = ui.ColorBlack
+	queue.Block.PaddingLeft = 1
 	ui.Render(queue)
 	ui.Clear()
 
@@ -35,7 +36,8 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 }
 
 func (self *Queue) Render() {
-	self.QueueList.Rows = format.FormatSongs(self.Share.MusicQueue, 20)
+	cols, _ := ui.TerminalDimensions()
+	self.QueueList.Rows = format.FormatSongs(self.Share.MusicQueue, cols-2)
 	ui.Render(self.QueueList)
 	for _, m := range self.SubModule {
 		m.Render()
@@ -66,12 +68,7 @@ func (self *Queue) HandleEvent(ev ui.Event) {
 	case "x":
 		index := self.QueueList.SelectedRow
 		if index < len(self.Share.MusicQueue) {
-			copy(self.Share.MusicQueue[index:], self.Share.MusicQueue[index+1:])
-			self.Share.MusicQueue[len(self.Share.MusicQueue)-1] = ""
-			self.Share.MusicQueue = self.Share.MusicQueue[:len(self.Share.MusicQueue)-1]
-			if index == len(self.Share.MusicQueue) && index != 0 {
-				self.QueueList.SelectedRow--
-			}
+			// Delete
 		}
 	}
 }

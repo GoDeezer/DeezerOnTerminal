@@ -93,7 +93,7 @@ func (self *Search) HandleEvent(ev ui.Event) {
 			self.Share.QueryResult = query
 		} else {
 			// Add to queue
-			self.Share.MusicQueue = append(self.Share.MusicQueue, self.Share.SearchResult.Songs.Data[self.SearchResult.SelectedRow])
+			self.Share.MusicQueue = append(self.Share.MusicQueue, self.Share.QueryResult.Songs.Data[self.SearchResult.SelectedRow])
 		}
 	case "<Space>":
 		self.SearchBar.Text += " "
