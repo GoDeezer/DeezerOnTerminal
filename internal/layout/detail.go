@@ -3,17 +3,16 @@ package layout
 import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
-	"github.com/godeezer/dot/internal/shared"
 )
 
 type Detail struct {
-	Share       *shared.ModuleShare
+	Share       *ModuleShare
 	SubModule   []Module
 	Information *widgets.Paragraph
 	Cover       *widgets.Paragraph
 }
 
-func NewDetail(share *shared.ModuleShare, submodule ...Module) *Detail {
+func NewDetail(share *ModuleShare, submodule ...Module) *Detail {
 	information := widgets.NewParagraph()
 	information.Border = true
 	information.Title = "Currently Playing In Detail..."

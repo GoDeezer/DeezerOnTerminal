@@ -5,7 +5,6 @@ import (
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/godeezer/dot/internal/layout"
-	"github.com/godeezer/dot/internal/shared"
 	deezer "github.com/godeezer/lib/deezer"
 )
 
@@ -17,7 +16,7 @@ const (
 
 type App struct {
 	Stop  bool
-	Share *shared.ModuleShare
+	Share *layout.ModuleShare
 
 	Layout *layout.LayoutList
 }
@@ -27,7 +26,7 @@ func NewApp() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	shared := shared.NewModuleShare(client)
+	shared := layout.NewModuleShare(client)
 
 	// Modules
 	playing := layout.NewPlaying(shared)
@@ -107,10 +106,10 @@ func main() {
 
 	app, err := NewApp()
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to create new application: %v", err)
 	}
 
 	if err := app.Run(); err != nil {
-		panic(err)
+		log.Fatalf("failed to run application: %v", err)
 	}
 }

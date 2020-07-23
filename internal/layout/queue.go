@@ -5,17 +5,16 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 
 	"github.com/godeezer/dot/internal/format"
-	"github.com/godeezer/dot/internal/shared"
 )
 
 type Queue struct {
-	Share     *shared.ModuleShare
+	Share     *ModuleShare
 	SubModule []Module
 
 	QueueList *widgets.List
 }
 
-func NewQueue(share *shared.ModuleShare, submodule ...Module) *Queue {
+func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 	queue := widgets.NewList()
 	queue.Border = true
 	queue.Title = "queue"

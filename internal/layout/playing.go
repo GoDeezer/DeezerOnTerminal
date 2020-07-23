@@ -3,15 +3,14 @@ package layout
 import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
-	"github.com/godeezer/dot/internal/shared"
 )
 
 type Playing struct {
-	Share   *shared.ModuleShare
+	Share   *ModuleShare
 	Playing *widgets.Paragraph
 }
 
-func NewPlaying(share *shared.ModuleShare) *Playing {
+func NewPlaying(share *ModuleShare) *Playing {
 	playing := widgets.NewParagraph()
 	playing.Border = true
 	playing.Title = "playing"

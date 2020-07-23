@@ -6,7 +6,6 @@ import (
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 	"github.com/godeezer/dot/internal/format"
-	"github.com/godeezer/dot/internal/shared"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 
 // TODO Use string builder/bytebuffer for input field
 type Search struct {
-	Share     *shared.ModuleShare
+	Share     *ModuleShare
 	SubModule []Module
 
 	SearchBarMode int // Track, Album, Artist
@@ -27,7 +26,7 @@ type Search struct {
 	SearchResult  *widgets.List
 }
 
-func NewSearch(share *shared.ModuleShare, submodule ...Module) *Search {
+func NewSearch(share *ModuleShare, submodule ...Module) *Search {
 	searchbar := widgets.NewParagraph()
 	searchbar.Text = ""
 	searchbar.Title = "search"
