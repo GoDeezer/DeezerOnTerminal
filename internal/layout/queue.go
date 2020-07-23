@@ -5,16 +5,17 @@ import (
 	"github.com/gizak/termui/v3/widgets"
 
 	"github.com/godeezer/dot/internal/format"
+	"github.com/godeezer/dot/internal/shared"
 )
 
 type Queue struct {
-	Share     *ModuleShare
+	Share     *shared.ModuleShare
 	SubModule []Module
 
 	QueueList *widgets.List
 }
 
-func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
+func NewQueue(share *shared.ModuleShare, submodule ...Module) *Queue {
 	queue := widgets.NewList()
 	queue.Border = true
 	queue.Title = "queue"
@@ -37,7 +38,7 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 
 func (self *Queue) Render() {
 	cols, _ := ui.TerminalDimensions()
-	self.QueueList.Rows = format.FormatSongs(self.Share.MusicQueue, cols-2)
+	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, cols-2)
 	ui.Render(self.QueueList)
 	for _, m := range self.SubModule {
 		m.Render()
@@ -63,7 +64,7 @@ func (self *Queue) HandleEvent(ev ui.Event) {
 			self.QueueList.SelectedRow++
 		}
 	case "<Enter>":
-		self.Share.MusicCurrent = self.Share.MusicQueue[self.QueueList.SelectedRow]
+		self.Share.MusicCurrent = self.Share.Player.PlayerQueue.Queue[self.QueueList.SelectedRow]
 		self.Share.MusicProgress = 0.5
 	case "x":
 		index := self.QueueList.SelectedRow

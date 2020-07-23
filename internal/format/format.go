@@ -3,6 +3,8 @@ package format
 import (
 	"fmt"
 
+	"unicode/utf8"
+
 	"github.com/godeezer/lib/deezer"
 )
 
@@ -11,7 +13,7 @@ func StringLimitLength(s string, n int) string {
 		return s[0:n]
 	}
 	ret := s
-	for i := 0; i < n-len(s); i++ {
+	for i := 0; i < n-utf8.RuneCountInString(s); i++ {
 		ret += " "
 	}
 	return ret
@@ -29,6 +31,30 @@ func FormatSongs(songs []deezer.Song, col int) []string {
 				StringLimitLength(s.Title, col/3),
 				StringLimitLength(s.ArtistName, col/3)), col)
 		}
+	}
+	return ret
+}
+
+func FormatAlbums(albums []deezer.Album, col int) []string {
+	ret := make([]string, len(albums))
+	for i, a := range albums {
+		if a.ExplicitContent.CoverStatus == 1 && a.ExplicitContent.LyricsStatus == 1 {
+			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s",
+				StringLimitLength(a.Title, col/3),
+				StringLimitLength(a.ArtistName, col/3)), col-12) + "[ Explicit ](mod:reverse)"
+		} else {
+			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s",
+				StringLimitLength(a.Title, col/3),
+				StringLimitLength(a.ArtistName, col/3)), col)
+		}
+	}
+	return ret
+}
+
+func FormatArtists(artists []deezer.Artist, col int) []string {
+	ret := make([]string, len(artists))
+	for i, a := range artists {
+		ret[i] = StringLimitLength(a.Name, col-12)
 	}
 	return ret
 }

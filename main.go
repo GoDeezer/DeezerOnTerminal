@@ -4,7 +4,8 @@ import (
 	"log"
 
 	ui "github.com/gizak/termui/v3"
-	layout "github.com/godeezer/dot/internal/layout"
+	"github.com/godeezer/dot/internal/layout"
+	"github.com/godeezer/dot/internal/shared"
 	deezer "github.com/godeezer/lib/deezer"
 )
 
@@ -14,21 +15,19 @@ const (
 	TabLast
 )
 
-// interface for display module
-type Module interface {
-	Render()
-	Resize(int, int)
-}
-
 type App struct {
 	Stop  bool
-	Share *layout.ModuleShare
+	Share *shared.ModuleShare
 
 	Layout *layout.LayoutList
 }
 
-func NewApp() *App {
-	shared := &layout.ModuleShare{}
+func NewApp() (*App, error) {
+	client, err := deezer.NewClient("")
+	if err != nil {
+		return nil, err
+	}
+	shared := shared.NewModuleShare(client)
 
 	// Modules
 	playing := layout.NewPlaying(shared)
@@ -50,7 +49,7 @@ func NewApp() *App {
 
 	app.HandleResize()
 	app.Render()
-	return app
+	return app, nil
 }
 
 func (self *App) Render() {
@@ -91,12 +90,6 @@ func (self *App) HandleResize() {
 }
 
 func (self *App) Run() error {
-	c, err := deezer.NewClient("")
-	if err != nil {
-		return err
-	}
-	self.Share.DeezerClient = c
-
 	ev := ui.PollEvents()
 	for !self.Stop {
 		e := <-ev
@@ -112,7 +105,12 @@ func main() {
 	}
 	defer ui.Close()
 
-	if err := NewApp().Run(); err != nil {
+	app, err := NewApp()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := app.Run(); err != nil {
 		panic(err)
 	}
 }

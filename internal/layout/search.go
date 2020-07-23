@@ -5,26 +5,29 @@ import (
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
+	"github.com/godeezer/dot/internal/format"
+	"github.com/godeezer/dot/internal/shared"
 )
 
 const (
-	SearchTrack = iota
+	SearchSong = iota
 	SearchAlbum
 	SearchArtist
-	SearchPlaylist
+	//	SearchPlaylist playlist currently not supported by lib
+	SearchLast
 )
 
 // TODO Use string builder/bytebuffer for input field
 type Search struct {
-	Share     *ModuleShare
+	Share     *shared.ModuleShare
 	SubModule []Module
 
-	SearchBarMode int
+	SearchBarMode int // Track, Album, Artist
 	SearchBar     *widgets.Paragraph
 	SearchResult  *widgets.List
 }
 
-func NewSearch(share *ModuleShare, submodule ...Module) *Search {
+func NewSearch(share *shared.ModuleShare, submodule ...Module) *Search {
 	searchbar := widgets.NewParagraph()
 	searchbar.Text = ""
 	searchbar.Title = "search"
@@ -45,13 +48,73 @@ func NewSearch(share *ModuleShare, submodule ...Module) *Search {
 	return &Search{
 		Share:         share,
 		SubModule:     submodule,
-		SearchBarMode: SearchTrack,
+		SearchBarMode: SearchSong,
 		SearchBar:     searchbar,
 		SearchResult:  searchresult,
 	}
 }
 
+// methods
+func (self *Search) NextMode() {
+	self.SearchBarMode++
+	if self.SearchBarMode >= SearchLast {
+		self.SearchBarMode = 0
+	}
+
+}
+
+func (self *Search) LoadQuery() {
+	query, err := self.Share.DeezerClient.Search(self.SearchBar.Text, "", "", 0, 20)
+	if err != nil {
+		self.SearchResult.Rows = []string{
+			fmt.Sprint("Error: ", err),
+		}
+		return
+	}
+
+	// Setup list
+	cols, _ := ui.TerminalDimensions()
+	switch self.SearchBarMode {
+	case SearchSong:
+		self.SearchResult.Rows = format.FormatSongs(query.Songs.Data, cols)
+	case SearchAlbum:
+		self.SearchResult.Rows = format.FormatAlbums(query.Albums.Data, cols)
+	case SearchArtist:
+		self.SearchResult.Rows = format.FormatArtists(query.Artists.Data, cols)
+	}
+
+	// Reset
+	self.SearchBar.Text = ""
+	self.SearchResult.SelectedRow = 0
+
+	// Storing query to shared
+	self.Share.QueryResult = query
+}
+
+// Add selected song/album/artist to queue
+func (self *Search) AddQueue() {
+	switch self.SearchBarMode {
+	case SearchSong: // Add single song to queue
+		self.Share.Player.PlayerQueue.AddSong(self.Share.QueryResult.Songs.Data[self.SearchResult.SelectedRow])
+	case SearchAlbum: // Add entire album to queue
+		self.Share.Player.PlayerQueue.AddAlbum(self.Share.QueryResult.Albums.Data[self.SearchResult.SelectedRow])
+	case SearchArtist: // Add songs of artist to queue
+		self.Share.Player.PlayerQueue.AddArtist(self.Share.QueryResult.Artists.Data[self.SearchResult.SelectedRow])
+	}
+}
+
+// interface
+
 func (self *Search) Render() {
+	self.SearchBar.Title = "search"
+	switch self.SearchBarMode {
+	case SearchSong:
+		self.SearchBar.Title += " - song"
+	case SearchAlbum:
+		self.SearchBar.Title += " - album"
+	case SearchArtist:
+		self.SearchBar.Title += " - artist"
+	}
 	ui.Render(self.SearchBar, self.SearchResult)
 	for _, m := range self.SubModule {
 		m.Render()
@@ -70,36 +133,17 @@ func (self *Search) HandleEvent(ev ui.Event) {
 	switch ev.ID {
 	case "<Enter>":
 		if self.SearchBar.Text != "" {
-			// Load song here
-			res := []string{}
-			query, err := self.Share.DeezerClient.Search(self.SearchBar.Text, "", "", 0, 20)
-			if err != nil {
-				res = append(res, "error", fmt.Sprint(err))
-			} else {
-				for _, q := range query.Songs.Data {
-					artist := q.ArtistName
-					title := q.Title
-					if len(artist) > 20 {
-						artist = artist[:20]
-					}
-					if len(title) > 20 {
-						title = title[:20]
-					}
-					res = append(res, fmt.Sprintf("%-20s | %-20s %d", artist, title, q.ExplicitContent.LyricsStatus))
-				}
-			}
-			self.SearchBar.Text = ""
-			self.SearchResult.Rows = res
-			self.Share.QueryResult = query
+			self.LoadQuery()
 		} else {
-			// Add to queue
-			self.Share.MusicQueue = append(self.Share.MusicQueue, self.Share.QueryResult.Songs.Data[self.SearchResult.SelectedRow])
+			self.AddQueue()
 		}
 	case "<Space>":
 		self.SearchBar.Text += " "
 	case "<Backspace>":
 		if self.SearchBar.Text != "" {
 			self.SearchBar.Text = self.SearchBar.Text[:len(self.SearchBar.Text)-1]
+		} else {
+			self.NextMode()
 		}
 	case "<Up>":
 		if self.SearchResult.SelectedRow > 0 {
