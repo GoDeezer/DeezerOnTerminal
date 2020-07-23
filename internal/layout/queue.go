@@ -24,7 +24,6 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 	queue.SelectedRowStyle.Bg = ui.ColorWhite
 	queue.TextStyle.Fg = ui.ColorWhite
 	queue.TextStyle.Bg = ui.ColorBlack
-	queue.Block.PaddingLeft = 1
 	ui.Render(queue)
 	ui.Clear()
 
@@ -37,7 +36,7 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 
 func (self *Queue) Render() {
 	cols, _ := ui.TerminalDimensions()
-	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, cols-2)
+	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, cols)
 	ui.Render(self.QueueList)
 	for _, m := range self.SubModule {
 		m.Render()
