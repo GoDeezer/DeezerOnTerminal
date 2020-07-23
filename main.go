@@ -9,12 +9,6 @@ import (
 	deezer "github.com/godeezer/lib/deezer"
 )
 
-const (
-	TabSearch = iota
-	TabQueue
-	TabLast
-)
-
 type App struct {
 	Stop  bool
 	Share *shared.ModuleShare
@@ -50,11 +44,6 @@ func NewApp() (*App, error) {
 	app.HandleResize()
 	app.Render()
 	return app, nil
-}
-
-func (self *App) Render() {
-	ui.Clear()
-	self.Layout.Render()
 }
 
 func (self *App) HandleEvent(ev ui.Event) {
@@ -94,7 +83,9 @@ func (self *App) Run() error {
 	for !self.Stop {
 		e := <-ev
 		self.HandleEvent(e)
-		self.Render()
+
+		ui.Clear()
+		self.Layout.Render()
 	}
 	return nil
 }
@@ -107,10 +98,10 @@ func main() {
 
 	app, err := NewApp()
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to create application: %v", err)
 	}
 
 	if err := app.Run(); err != nil {
-		panic(err)
+		log.Fatalf("failed to run application: %v", err)
 	}
 }
