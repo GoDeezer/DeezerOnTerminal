@@ -18,3 +18,8 @@ func NewPlayer(client *deezer.Client) *Player {
 		PlayerQueue:  NewPlayerQueue(client),
 	}
 }
+
+func (self *Player) SetCurrentSong(song deezer.Song) {
+	self.CurrentSong = song
+	self.Progress = 0.0
+}

@@ -49,3 +49,10 @@ func (self *PlayerQueue) AddArtist(artists ...deezer.Artist) error {
 	}
 	return nil
 }
+
+func (self *PlayerQueue) Delete(index int) {
+	if index >= len(self.Queue) || len(self.Queue)-1 < 0 {
+		return
+	}
+	self.Queue = append(self.Queue[:index], self.Queue[index+1:]...)
+}

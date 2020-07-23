@@ -26,12 +26,11 @@ func NewPlaying(share *ModuleShare) *Playing {
 
 func (self *Playing) Render() {
 	progress := ""
-	rect := self.Playing.GetRect().Bounds()
-	cols := rect.Max.X - rect.Min.X
-	for i := 0; i < int(float64(cols)*self.Share.MusicProgress); i++ {
+	cols, _ := ui.TerminalDimensions()
+	for i := 0; i < int(float64(cols)*self.Share.Player.Progress); i++ {
 		progress += "█"
 	}
-	self.Playing.Text = self.Share.MusicCurrent.Title + "\nmore information\n" + progress
+	self.Playing.Text = self.Share.Player.CurrentSong.Title + "\nmore information\n" + progress
 	ui.Render(self.Playing)
 }
 

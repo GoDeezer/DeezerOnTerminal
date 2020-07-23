@@ -34,6 +34,8 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 	}
 }
 
+// interface
+
 func (self *Queue) Render() {
 	cols, _ := ui.TerminalDimensions()
 	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, cols)
@@ -52,7 +54,6 @@ func (self *Queue) Resize(cols, rows int) {
 
 func (self *Queue) HandleEvent(ev ui.Event) {
 	switch ev.ID {
-	case "<Backspace>":
 	case "<Up>":
 		if self.QueueList.SelectedRow > 0 {
 			self.QueueList.SelectedRow--
@@ -62,12 +63,12 @@ func (self *Queue) HandleEvent(ev ui.Event) {
 			self.QueueList.SelectedRow++
 		}
 	case "<Enter>":
-		self.Share.MusicCurrent = self.Share.Player.PlayerQueue.Queue[self.QueueList.SelectedRow]
-		self.Share.MusicProgress = 0.5
+		self.Share.Player.SetCurrentSong(self.Share.Player.PlayerQueue.Queue[self.QueueList.SelectedRow])
+	case "<Backspace>":
 	case "x":
-		index := self.QueueList.SelectedRow
-		if index < len(self.Share.MusicQueue) {
-			// Delete
+		self.Share.Player.PlayerQueue.Delete(self.QueueList.SelectedRow)
+		if self.QueueList.SelectedRow >= len(self.Share.Player.PlayerQueue.Queue) && self.QueueList.SelectedRow > 0 {
+			self.QueueList.SelectedRow--
 		}
 	}
 }

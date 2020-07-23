@@ -8,12 +8,9 @@ import (
 
 type ModuleShare struct {
 	DeezerClient *deezer.Client
-	Player       *player.Player
 
-	QueryResult   *deezer.SearchResponse
-	MusicQueue    []deezer.Song
-	MusicCurrent  deezer.Song
-	MusicProgress float64
+	Player      *player.Player
+	QueryResult *deezer.SearchResponse
 }
 
 func NewModuleShare(client *deezer.Client) *ModuleShare {
