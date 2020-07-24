@@ -23,13 +23,15 @@ func FormatSongs(songs []deezer.Song, col int) []string {
 	ret := make([]string, len(songs))
 	for i, s := range songs {
 		if s.ExplicitContent.CoverStatus == 1 && s.ExplicitContent.LyricsStatus == 1 || true {
-			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s",
-				StringLimitLength(s.Title, col/3),
-				StringLimitLength(s.ArtistName, col/3)), col-12) + "[ Explicit ](mod:reverse)"
+			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s - %s",
+				StringLimitLength(s.Title, col/4),
+				StringLimitLength(s.ArtistName, col/4),
+				StringLimitLength(s.AlbumTitle, col/4)), col-12) + "[ Explicit ](mod:reverse)"
 		} else {
-			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s",
-				StringLimitLength(s.Title, col/3),
-				StringLimitLength(s.ArtistName, col/3)), col)
+			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s - %s",
+				StringLimitLength(s.Title, col/4),
+				StringLimitLength(s.ArtistName, col/4),
+				StringLimitLength(s.AlbumTitle, col/4)), col)
 		}
 	}
 	return ret
