@@ -35,11 +35,16 @@ func NewDetail(share *ModuleShare, submodule ...Module) *Detail {
 	}
 }
 
+func (self *Detail) Update() {
+}
+
 func (self *Detail) Render() {
-	ui.Render(self.Information, self.Cover)
+	self.Update()
+	ui.Clear()
 	for _, m := range self.SubModule {
 		m.Render()
 	}
+	ui.Render(self.Information, self.Cover)
 }
 
 func (self *Detail) Resize(cols, rows int) {

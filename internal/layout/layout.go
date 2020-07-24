@@ -9,6 +9,9 @@ import (
 type ModuleShare struct {
 	DeezerClient *deezer.Client
 
+	Cols        int
+	Rows        int
+	Popup       Layout
 	Player      *player.Player
 	QueryResult *deezer.SearchResponse
 }
@@ -16,6 +19,7 @@ type ModuleShare struct {
 func NewModuleShare(client *deezer.Client) *ModuleShare {
 	return &ModuleShare{
 		DeezerClient: client,
+		Popup:        nil,
 		Player:       player.NewPlayer(client),
 	}
 }
@@ -27,11 +31,13 @@ type Module interface {
 
 // interface for module with event handle
 type Layout interface {
-	Module
+	Render()
+	Resize(int, int)
 	HandleEvent(ui.Event)
 }
 
 type LayoutList struct {
+	Share         *ModuleShare
 	CurrentLayout int
 	Layout        []Layout
 }
@@ -44,9 +50,17 @@ func (self *LayoutList) Next() {
 }
 
 func (self *LayoutList) Render() {
-	self.Layout[self.CurrentLayout].Render()
+	if self.Share.Popup != nil {
+		self.Share.Popup.Render()
+	} else {
+		self.Layout[self.CurrentLayout].Render()
+	}
 }
 
 func (self *LayoutList) HandleEvent(ev ui.Event) {
+	if self.Share.Popup != nil {
+		self.Share.Popup.HandleEvent(ev)
+		return
+	}
 	self.Layout[self.CurrentLayout].HandleEvent(ev)
 }

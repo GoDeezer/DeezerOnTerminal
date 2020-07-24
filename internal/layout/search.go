@@ -59,27 +59,25 @@ func (self *Search) NextMode() {
 	if self.SearchBarMode >= SearchLast {
 		self.SearchBarMode = 0
 	}
-
 }
 
 func (self *Search) LoadQuery() {
-	query, err := self.Share.DeezerClient.Search(self.SearchBar.Text, "", "", 0, 20)
+	query, err := self.Share.DeezerClient.Search(self.SearchBar.Text, "", "", 0, -1)
 	if err != nil {
-		self.SearchResult.Rows = []string{
-			fmt.Sprint("Error: ", err),
-		}
+		self.Share.Popup = NewPopup(self.Share)
+		self.Share.Popup.(*Popup).Box.Text = "Error\n" + fmt.Sprint(err)
+		self.Share.Popup.Resize(ui.TerminalDimensions())
 		return
 	}
 
 	// Setup list
-	cols, _ := ui.TerminalDimensions()
 	switch self.SearchBarMode {
 	case SearchSong:
-		self.SearchResult.Rows = format.FormatSongs(query.Songs.Data, cols)
+		self.SearchResult.Rows = format.FormatSongs(query.Songs.Data, self.Share.Cols)
 	case SearchAlbum:
-		self.SearchResult.Rows = format.FormatAlbums(query.Albums.Data, cols)
+		self.SearchResult.Rows = format.FormatAlbums(query.Albums.Data, self.Share.Cols)
 	case SearchArtist:
-		self.SearchResult.Rows = format.FormatArtists(query.Artists.Data, cols)
+		self.SearchResult.Rows = format.FormatArtists(query.Artists.Data, self.Share.Cols)
 	}
 
 	// Reset
@@ -104,7 +102,7 @@ func (self *Search) AddQueue() {
 
 // interface
 
-func (self *Search) Render() {
+func (self *Search) Update() {
 	self.SearchBar.Title = "search"
 	switch self.SearchBarMode {
 	case SearchSong:
@@ -114,10 +112,17 @@ func (self *Search) Render() {
 	case SearchArtist:
 		self.SearchBar.Title += " - artist"
 	}
-	ui.Render(self.SearchBar, self.SearchResult)
+
+	self.SearchResult.Title = "result - " + fmt.Sprint(len(self.SearchResult.Rows))
+}
+
+func (self *Search) Render() {
+	self.Update()
+	ui.Clear()
 	for _, m := range self.SubModule {
 		m.Render()
 	}
+	ui.Render(self.SearchBar, self.SearchResult)
 }
 
 func (self *Search) Resize(cols, rows int) {

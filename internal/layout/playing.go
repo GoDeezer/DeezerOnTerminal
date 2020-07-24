@@ -24,14 +24,23 @@ func NewPlaying(share *ModuleShare) *Playing {
 	}
 }
 
-func (self *Playing) Render() {
+func (self *Playing) Update() {
 	progress := ""
-	cols, _ := ui.TerminalDimensions()
-	for i := 0; i < int(float64(cols)*self.Share.Player.Progress); i++ {
+	for i := 0; i < int(float64(self.Share.Cols)*self.Share.Player.Progress); i++ {
 		progress += "█"
 	}
 	self.Playing.Text = self.Share.Player.CurrentSong.Title + "\nmore information\n" + progress
+}
+
+func (self *Playing) Render() {
+	self.Update()
 	ui.Render(self.Playing)
+}
+
+func (self *Playing) GetDrawable() []ui.Drawable {
+	return []ui.Drawable{
+		self.Playing,
+	}
 }
 
 func (self *Playing) Resize(cols, rows int) {

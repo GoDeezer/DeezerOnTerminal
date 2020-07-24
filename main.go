@@ -8,12 +8,6 @@ import (
 	deezer "github.com/godeezer/lib/deezer"
 )
 
-const (
-	TabSearch = iota
-	TabQueue
-	TabLast
-)
-
 type App struct {
 	Stop  bool
 	Share *layout.ModuleShare
@@ -36,6 +30,7 @@ func NewApp() (*App, error) {
 		Share: shared,
 
 		Layout: &layout.LayoutList{
+			Share:         shared,
 			CurrentLayout: 0,
 			Layout: []layout.Layout{
 				// Event Modules
@@ -47,12 +42,10 @@ func NewApp() (*App, error) {
 	}
 
 	app.HandleResize()
-	app.Render()
 	return app, nil
 }
 
 func (self *App) Render() {
-	ui.Clear()
 	self.Layout.Render()
 }
 
@@ -66,7 +59,6 @@ func (self *App) HandleEvent(ev ui.Event) {
 			return
 		case "<Tab>":
 			self.Layout.Next()
-			self.Render()
 			return
 		}
 	case ui.ResizeEvent:
@@ -75,20 +67,19 @@ func (self *App) HandleEvent(ev ui.Event) {
 	default:
 	}
 
-	// tab specific
 	self.Layout.HandleEvent(ev)
-	self.Render()
 }
 
 func (self *App) HandleResize() {
-	// Setting layout here
 	cols, rows := ui.TerminalDimensions()
+	self.Share.Cols, self.Share.Rows = cols, rows
 	for _, m := range self.Layout.Layout {
 		m.Resize(cols, rows)
 	}
 }
 
 func (self *App) Run() error {
+	self.Render()
 	ev := ui.PollEvents()
 	for !self.Stop {
 		e := <-ev

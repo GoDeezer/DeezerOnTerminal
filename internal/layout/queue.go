@@ -1,6 +1,8 @@
 package layout
 
 import (
+	"fmt"
+
 	ui "github.com/gizak/termui/v3"
 	"github.com/gizak/termui/v3/widgets"
 
@@ -24,8 +26,6 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 	queue.SelectedRowStyle.Bg = ui.ColorWhite
 	queue.TextStyle.Fg = ui.ColorWhite
 	queue.TextStyle.Bg = ui.ColorBlack
-	ui.Render(queue)
-	ui.Clear()
 
 	return &Queue{
 		Share:     share,
@@ -36,13 +36,18 @@ func NewQueue(share *ModuleShare, submodule ...Module) *Queue {
 
 // interface
 
+func (self *Queue) Update() {
+	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, self.Share.Cols)
+	self.QueueList.Title = "queue - " + fmt.Sprint(len(self.QueueList.Rows))
+}
+
 func (self *Queue) Render() {
-	cols, _ := ui.TerminalDimensions()
-	self.QueueList.Rows = format.FormatSongs(self.Share.Player.PlayerQueue.Queue, cols)
-	ui.Render(self.QueueList)
+	self.Update()
+	ui.Clear()
 	for _, m := range self.SubModule {
 		m.Render()
 	}
+	ui.Render(self.QueueList)
 }
 
 func (self *Queue) Resize(cols, rows int) {

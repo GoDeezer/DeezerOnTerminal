@@ -1,6 +1,8 @@
 package player
 
 import (
+	"sync"
+
 	"github.com/godeezer/lib/deezer"
 )
 
@@ -17,37 +19,52 @@ func NewPlayerQueue(client *deezer.Client) *PlayerQueue {
 	}
 }
 
-func (self *PlayerQueue) AddSong(songs ...deezer.Song) error {
-	self.Queue = append(self.Queue, songs...)
-	return nil
+func (self *PlayerQueue) IsInQueue(song deezer.Song) bool {
+	for _, s := range self.Queue {
+		if s.ID == song.ID {
+			return true
+		}
+	}
+	return false
 }
 
-func (self *PlayerQueue) AddAlbum(albums ...deezer.Album) error {
+func (self *PlayerQueue) AddSong(songs ...deezer.Song) {
+	for _, song := range songs {
+		if self.IsInQueue(song) {
+			continue
+		}
+		self.Queue = append(self.Queue, songs...)
+	}
+}
+
+func (self *PlayerQueue) AddAlbum(albums ...deezer.Album) {
+	var wg sync.WaitGroup
 	for _, a := range albums {
-		songs, err := self.DeezerClient.SongsByAlbum(a.ID, -1)
-		if err != nil {
-			return err
-		}
-		err = self.AddSong(songs...)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func() {
+			songs, err := self.DeezerClient.SongsByAlbum(a.ID, -1)
+			if err == nil {
+				self.AddSong(songs...)
+			}
+			wg.Done()
+		}()
 	}
-	return nil
+	wg.Wait()
 }
 
-func (self *PlayerQueue) AddArtist(artists ...deezer.Artist) error {
+func (self *PlayerQueue) AddArtist(artists ...deezer.Artist) {
+	var wg sync.WaitGroup
 	for _, a := range artists {
-		albums, err := self.DeezerClient.AlbumsByArtist(a.ID)
-		if err != nil {
-			return err
-		}
-		err = self.AddAlbum(albums...)
-		if err != nil {
-			return err
-		}
+		wg.Add(1)
+		go func() {
+			albums, err := self.DeezerClient.AlbumsByArtist(a.ID)
+			if err == nil {
+				self.AddAlbum(albums...)
+			}
+			wg.Done()
+		}()
 	}
-	return nil
+	wg.Wait()
 }
 
 func (self *PlayerQueue) Delete(index int) {
