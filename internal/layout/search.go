@@ -90,6 +90,9 @@ func (self *Search) LoadQuery() {
 
 // Add selected song/album/artist to queue
 func (self *Search) AddQueue() {
+	if self.Share.QueryResult == nil {
+		return
+	}
 	switch self.SearchBarMode {
 	case SearchSong: // Add single song to queue
 		self.Share.Player.PlayerQueue.AddSong(self.Share.QueryResult.Songs.Data[self.SearchResult.SelectedRow])

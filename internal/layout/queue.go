@@ -68,6 +68,9 @@ func (self *Queue) HandleEvent(ev ui.Event) {
 			self.QueueList.SelectedRow++
 		}
 	case "<Enter>":
+		if len(self.Share.Player.PlayerQueue.Queue) < 0 {
+			break
+		}
 		self.Share.Player.SetCurrentSong(self.Share.Player.PlayerQueue.Queue[self.QueueList.SelectedRow])
 	case "<Backspace>":
 	case "x":
