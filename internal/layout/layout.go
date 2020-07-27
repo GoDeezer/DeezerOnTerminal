@@ -8,6 +8,7 @@ import (
 
 type ModuleShare struct {
 	DeezerClient *deezer.Client
+	ReDraw       chan struct{}
 
 	Cols        int
 	Rows        int
@@ -17,10 +18,12 @@ type ModuleShare struct {
 }
 
 func NewModuleShare(client *deezer.Client) *ModuleShare {
+	redraw := make(chan struct{}, 10)
 	return &ModuleShare{
 		DeezerClient: client,
+		ReDraw:       redraw,
 		Popup:        nil,
-		Player:       player.NewPlayer(client),
+		Player:       player.NewPlayer(client, redraw),
 	}
 }
 

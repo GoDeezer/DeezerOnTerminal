@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	ui "github.com/gizak/termui/v3"
 	"github.com/godeezer/dot/internal/layout"
@@ -16,7 +17,7 @@ type App struct {
 }
 
 func NewApp() (*App, error) {
-	client, err := deezer.NewClient("")
+	client, err := deezer.NewClient(os.Args[1])
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +83,13 @@ func (self *App) Run() error {
 	self.Render()
 	ev := ui.PollEvents()
 	for !self.Stop {
-		e := <-ev
-		self.HandleEvent(e)
-		self.Render()
+		select {
+		case e := <-ev:
+			self.HandleEvent(e)
+			self.Render()
+		case <-self.Share.ReDraw:
+			self.Render()
+		}
 	}
 	return nil
 }
