@@ -22,7 +22,7 @@ func StringLimitLength(s string, n int) string {
 func FormatSongs(songs []deezer.Song, col int) []string {
 	ret := make([]string, len(songs))
 	for i, s := range songs {
-		if s.ExplicitContent.CoverStatus == 1 && s.ExplicitContent.LyricsStatus == 1 || true {
+		if s.ExplicitContent.LyricsStatus == 1 || s.ExplicitContent.LyricsStatus == 4 {
 			ret[i] = StringLimitLength(fmt.Sprintf("%s - %s - %s",
 				StringLimitLength(s.Title, col/4),
 				StringLimitLength(s.ArtistName, col/4),
